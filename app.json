@@ -1,0 +1,63 @@
+{
+  "expo": {
+    "name": "LogiTrack",
+    "slug": "LogiTrack",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/logitrack_icon.png",
+    "scheme": "logitrack",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/images/logitrack_icon.png",
+        "backgroundImage": "./assets/images/logitrack_icon.png",
+        "monochromeImage": "./assets/images/logitrack_icon.png"
+      },
+      "softwareKeyboardLayoutMode": "resize",
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
+      "package": "com.khannibal.logitrack",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyBOm5Ik_2QS-YhbgQxiolEzn1fZALusmGE"
+        }
+      }
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/logitrack_icon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/logitrack_icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff",
+          "dark": {
+            "backgroundColor": "#000000"
+          }
+        }
+      ],
+      "expo-secure-store",
+      "expo-localization"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "a2a12f53-6366-4bc8-8927-5bed16214680"
+      }
+    }
+  }
+}

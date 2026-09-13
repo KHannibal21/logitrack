@@ -1,0 +1,88 @@
+// Firestore Security Rules for Logitrack (Production)
+// Deploy with: firebase firestore:rules:deploy rules.txt
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAdmin() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isDispatcher() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'dispatcher';
+    }
+    
+    function isCourier() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'courier';
+    }
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow update: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow delete: if isAdmin();
+      
+      // Prevent direct role modification
+      allow update: if isAuthenticated() && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']);
+    }
+    
+    // Inventory collection (products/warehouse)
+    match /inventory/{itemId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && (isAdmin() || isDispatcher());
+      allow update: if isAuthenticated() && (isAdmin() || isDispatcher());
+      allow delete: if isAdmin();
+      
+      // Prevent direct quantity/reserved modification (only via Cloud Functions)
+      allow update: if isAuthenticated() && (
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['quantity', 'reserved'])
+      );
+    }
+    
+    // Orders collection
+    match /orders/{orderId} {
+      // Admins see all
+      allow read: if isAuth enticated() && isAdmin();
+      
+      // Dispatchers see their own
+      allow read: if isAuthenticated() && isDispatcher() && resource.data.createdBy == request.auth.uid;
+      
+      // Couriers see their own assignments
+      allow read: if isAuthenticated() && isCourier() && resource.data.courierId == request.auth.uid;
+      
+      // Dispatchers create orders
+      allow create: if isAuthenticated() && (isDispatcher() || isAdmin());
+      
+      // Only certain fields updatable
+      allow update: if isAuthenticated() && (isAdmin() || 
+        (isDispatcher() && resource.data.createdBy == request.auth.uid && 
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['comment', 'status'])) ||
+        (isCourier() && resource.data.courierId == request.auth.uid && 
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']))
+      );
+      
+      // Only admins delete
+      allow delete: if isAdmin();
+    }
+    
+    // Courier locations (real-time tracking)
+    match /courierLocations/{userId} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin() || isDispatcher());
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow update: if isAuthenticated() && request.auth.uid == userId;
+      allow delete: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+    }
+    
+    // Deny everything by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
