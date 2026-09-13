@@ -46,7 +46,7 @@ import { getDownloadURL, getStorage, ref, uploadBytes } from 'firebase/storage';
 // ⚠️ В идеале firebaseConfig хранить в .env, но оставляю как у тебя.
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyC5vf0BG1Bs4iZrRZe0CQxKVKNOokRDyhY',
+  apiKey: ' ',
   authDomain: 'logitrack-c6ec0.firebaseapp.com',
   projectId: 'logitrack-c6ec0',
   storageBucket: 'logitrack-c6ec0.firebasestorage.app',
